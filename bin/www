@@ -12,7 +12,7 @@ var server = app.listen(app.get('port'), function() {
 });
 
 var clients = 0
-
+var movers = []
 
 var io = require('socket.io').listen(server);
 io.sockets.on('connection', function(socket) {
@@ -30,14 +30,15 @@ io.sockets.on('connection', function(socket) {
     socket.broadcast.emit('new_game', player);
   });
 
-  
   socket.on("playerposition", function(player) {
-    socket.broadcast.emit('playerposition', player);
+    socket.broadcast.emit('playerposition', player);  
   });
 
   socket.on("new_player", function(new_player) {
     socket.broadcast.emit('new_player', new_player);
   });
+
+
 
 
   socket.on('disconnect', function () {

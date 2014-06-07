@@ -6,7 +6,7 @@ var shoot = 0;
 var speed = 3;
 var imgd;
 var rects = [];
-var movers = {};
+var movers = [];
 var client_id 
 
 window.requestAnimFrame = (function(){
@@ -24,6 +24,7 @@ window.requestAnimFrame = (function(){
 
 socket.on('connected', function(socket_id){
       console.log(socket_id)
+
       client_id = socket_id
   }); 
 
@@ -33,13 +34,15 @@ socket.on('move', function(direction){
 
 socket.on('new_game', function(player){
       game(player);
-      console.log(player);
+      console.log("starting new game")
+      console.log(player)
+      // console.log(player);
   });
 
 
 socket.on('new_player', function(new_player){
       movers.push(new_player)
-      console.log(new_player);
+      // console.log(new_player);
   });
 
 socket.on('playerposition', function(position){
@@ -51,10 +54,17 @@ socket.on('playerposition', function(position){
       }
   });
 
-$('#output').on("click", function(){
+$('#create_game').on("click", function(){
   var player = game();
-  socket.emit("new_game", player)  
+  socket.emit("new_game", [player])  
 })
+
+$('#join_game').on("click", function(){
+  var new_player = new Player(100,100,10,1,0,0,client_id);
+  movers.push(new_player)
+  socket.emit("new_player", new_player)  
+})
+
 
 $('#change_pos').on("click", function(){
   movers[0].x = 0
@@ -74,7 +84,13 @@ function Player(x,y,w, solid, speedx, speedy, client_id) {
   }
 
 function drawMovers(movers) {
+
   for (var i = 0; i < movers.length ; i++) {
+      if(movers[i].client_id == client_id) {
+        cxt.fillStyle = "#FF0000";
+      } else {
+        cxt.fillStyle = "#000";
+      }
       cxt.fillRect(movers[i].x,movers[i].y,movers[i].w,movers[i].h);
       };
 };
@@ -100,16 +116,19 @@ function movePlayer(movers) {
 
 
 
-function game(player) {
+function game(players) {
 
   var canvas = document.getElementById("canvas");
   cxt = canvas.getContext("2d");
 
-  if(typeof player !== 'undefined'){
-    var new_player = new Player(50,50,10,1,0,0,client_id);
-    movers = [ player, new_player];
-    socket.emit('new_player', new_player);
+  if(typeof players !== 'undefined'){
+    // var new_player = new Player(50,50,10,1,0,0,client_id);
+    movers = players;
+    // console.log("here")
+    // console.log(players)
+    // socket.emit('new_player', new_player);
   } else {
+
     var new_player = new Player(0,0,10,1,0,0,client_id);
     movers = [new_player];
   
@@ -128,7 +147,6 @@ function game(player) {
       cxt.putImageData(imgdata, 0, 0);
       movePlayer(movers);
       drawMovers(movers);
-      
 
     })();
  return new_player;
@@ -143,30 +161,29 @@ window.addEventListener('keydown', function(event) {
   switch (event.keyCode) {
     case 37: // Left
       incx = Math.max(incx-speed,-speed);
-      socket.emit('move', "left");
       console.log(movers)
       break;
 
     case 38: // Up
       incy = Math.max(incy-speed,-speed);
-      socket.emit('move', "up");
+      
       console.log(movers)
       break;
 
     case 39: // Right
       incx = Math.min(incx+speed,speed)
-      socket.emit('move', "right");
+      
       console.log(movers)
       break;
 
     case 40: // Down
       incy = Math.min(incy+speed,speed)
-      socket.emit('move', "down");
+      
       console.log(movers)
       break;
     case 32:
       shoot = 1;
-      socket.emit('move', "shoot");
+      
     break;
     
   }
