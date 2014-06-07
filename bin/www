@@ -18,11 +18,10 @@ var io = require('socket.io').listen(server);
 io.sockets.on('connection', function(socket) {
   
 var updatePlayer = function(player) {
-  console.log(movers.length)
+  
   for(var i = 0 ; i < movers.length; i++) {
           if (movers[i].client_id == player.client_id) {
             movers[i] = player
-            console.log("player updated")
           }
       }
 
