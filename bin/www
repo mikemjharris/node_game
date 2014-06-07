@@ -2,8 +2,46 @@
 var debug = require('debug')('game');
 var app = require('../app');
 
+
 app.set('port', process.env.PORT || 3000);
 
 var server = app.listen(app.get('port'), function() {
-  debug('Express server listening on port ' + server.address().port);
+  console.log('Express server listening on port ' + server.address().port)
+  debug('Express server listening on port ' + server.address().port);  
+
 });
+
+var clients = 0
+
+
+var io = require('socket.io').listen(server);
+io.sockets.on('connection', function(socket) {
+  
+  socket.emit('connected', socket.id);
+
+  clients += 1;
+  console.log(socket.id)
+  console.log(clients + "connected")
+  socket.on('move', function(direction) {
+    socket.broadcast.emit('move', direction);
+  });
+
+  socket.on("new_game", function(player) {
+    socket.broadcast.emit('new_game', player);
+  });
+
+  
+  socket.on("playerposition", function(player) {
+    socket.broadcast.emit('playerposition', player);
+  });
+
+  socket.on("new_player", function(new_player) {
+    socket.broadcast.emit('new_player', new_player);
+  });
+
+
+  socket.on('disconnect', function () {
+    console.log('client disconnected');
+    clients -= 1;
+  });
+})
