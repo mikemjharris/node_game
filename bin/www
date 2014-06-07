@@ -17,7 +17,7 @@ var movers = []
 var io = require('socket.io').listen(server);
 io.sockets.on('connection', function(socket) {
   
-  socket.emit('connected', socket.id);
+  socket.emit('connected', socket.id, movers);
 
   clients += 1;
   console.log(socket.id)
@@ -27,15 +27,18 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on("new_game", function(player) {
-    socket.broadcast.emit('new_game', player);
+    socket.broadcast.emit('new_game', [player]);
+    movers.push(player)
   });
 
   socket.on("playerposition", function(player) {
+    // movers 
     socket.broadcast.emit('playerposition', player);  
   });
 
   socket.on("new_player", function(new_player) {
     socket.broadcast.emit('new_player', new_player);
+    movers.push(new_player)
   });
 
 
@@ -43,6 +46,16 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('disconnect', function () {
     console.log('client disconnected');
+    console.log(socket.id)
+    console.log("***" + movers)
+    if (movers) {
+      for(var i = 0 ; i < movers.length; i++) {
+          if (movers[i].client_id == socket.id) {
+            movers.splice(i,1)
+            socket.broadcast.emit('player_removed', socket.id);
+          }
+      }
+    }
     clients -= 1;
   });
 })

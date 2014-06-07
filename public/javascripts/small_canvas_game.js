@@ -22,10 +22,12 @@ window.requestAnimFrame = (function(){
 
 
 
-socket.on('connected', function(socket_id){
+socket.on('connected', function(socket_id, existing_movers){
       console.log(socket_id)
-
+      console.log(existing_movers)
       client_id = socket_id
+      game(existing_movers)
+
   }); 
 
 socket.on('move', function(direction){
@@ -33,11 +35,23 @@ socket.on('move', function(direction){
   });
 
 socket.on('new_game', function(player){
-      game(player);
+      // game(player);
       console.log("starting new game")
       console.log(player)
       // console.log(player);
   });
+
+
+socket.on('player_removed', function(player_id){
+  console.log(player_id)
+  for(var i = 0; i < movers.length; i ++) {
+
+    if(movers[i].client_id == player_id){
+      movers.splice(i,1);
+    }
+  }
+})
+
 
 
 socket.on('new_player', function(new_player){
@@ -56,7 +70,7 @@ socket.on('playerposition', function(position){
 
 $('#create_game').on("click", function(){
   var player = game();
-  socket.emit("new_game", [player])  
+  socket.emit("new_game", player)  
 })
 
 $('#join_game').on("click", function(){
@@ -161,25 +175,25 @@ window.addEventListener('keydown', function(event) {
   switch (event.keyCode) {
     case 37: // Left
       incx = Math.max(incx-speed,-speed);
-      console.log(movers)
+      // console.log(movers)
       break;
 
     case 38: // Up
       incy = Math.max(incy-speed,-speed);
       
-      console.log(movers)
+      // console.log(movers)
       break;
 
     case 39: // Right
       incx = Math.min(incx+speed,speed)
       
-      console.log(movers)
+      // console.log(movers)
       break;
 
     case 40: // Down
       incy = Math.min(incy+speed,speed)
       
-      console.log(movers)
+      // console.log(movers)
       break;
     case 32:
       shoot = 1;
