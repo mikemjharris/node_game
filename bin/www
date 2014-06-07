@@ -17,14 +17,26 @@ var movers = []
 var io = require('socket.io').listen(server);
 io.sockets.on('connection', function(socket) {
   
+var updatePlayer = function(player) {
+  console.log(movers.length)
+  for(var i = 0 ; i < movers.length; i++) {
+          if (movers[i].client_id == player.client_id) {
+            movers[i] = player
+            console.log("player updated")
+          }
+      }
+
+}
+
+
   socket.emit('connected', socket.id, movers);
 
   clients += 1;
   console.log(socket.id)
   console.log(clients + "connected")
-  socket.on('move', function(direction) {
-    socket.broadcast.emit('move', direction);
-  });
+  // socket.on('move', function(direction) {
+  //   socket.broadcast.emit('move', direction);
+  // });
 
   socket.on("new_game", function(player) {
     socket.broadcast.emit('new_game', [player]);
@@ -33,7 +45,9 @@ io.sockets.on('connection', function(socket) {
 
   socket.on("playerposition", function(player) {
     // movers 
-    socket.broadcast.emit('playerposition', player);  
+    socket.broadcast.emit('playerposition', player); 
+    console.log("here")
+    updatePlayer(player);
   });
 
   socket.on("new_player", function(new_player) {
@@ -45,9 +59,9 @@ io.sockets.on('connection', function(socket) {
 
 
   socket.on('disconnect', function () {
-    console.log('client disconnected');
-    console.log(socket.id)
-    console.log("***" + movers)
+    // console.log('client disconnected');
+    // console.log(socket.id)
+    // console.log("***" + movers)
     if (movers) {
       for(var i = 0 ; i < movers.length; i++) {
           if (movers[i].client_id == socket.id) {
@@ -59,3 +73,23 @@ io.sockets.on('connection', function(socket) {
     clients -= 1;
   });
 })
+
+ 
+
+function updadteMovers() {
+      for (var i = 0 ; i < movers.length; i ++) { 
+        movers[i].x = Math.min(Math.max(movers[i].x + movers[i].speedx,0),400 -movers[i].w)
+        movers[i].y = Math.min(Math.max(movers[i].y + movers[i].speedy,0),400 -movers[i].h)
+      }
+  }
+  
+
+
+
+
+
+var times_per_second = 60
+setInterval(function(){
+    // console.log("hi")
+    updadteMovers();
+}, 1000 / times_per_second)
