@@ -37,8 +37,8 @@ socket.on('move', function(direction){
 
 socket.on('new_game', function(player){
       // game(player);
-      console.log("starting new game")
-      console.log(player)
+      // console.log("starting new game")
+      // console.log(player)
       // console.log(player);
   });
 
@@ -52,7 +52,6 @@ socket.on('player_removed', function(player_id){
     }
   }
 })
-
 
 
 socket.on('new_player', function(new_player){

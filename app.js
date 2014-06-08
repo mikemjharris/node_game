@@ -4,7 +4,35 @@ var favicon = require('static-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var session = require('express-session');
+var user = []
+var passport = require('passport')
+var TwitterStrategy = require('passport-twitter').Strategy;
 
+passport.serializeUser(function(user, done) {
+  done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+  done(null, user);
+});
+
+
+passport.use(new TwitterStrategy({
+    consumerKey: ENV[AUTH_TWITTER_NODE_GAME_KEY],
+    consumerSecret: ENV[AUTH_TWITTER_NODE_GAME_SECRET],
+    callbackURL: "http://localhost:3000/auth/twitter/callback"
+  },
+  function(token, tokenSecret, profile, done) {
+    user = profile;
+    session.profile = profile
+    done(null, profile);
+    // User.findOrCreate(..., function(err, user) {
+      // if (err) { return done(err); }
+      // done(null, user);
+    // });
+  }
+));
 
 
 var routes = require('./routes/index');
@@ -25,6 +53,20 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({secret: '1234567890QWERTY'}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+
+
+
+app.get('/auth/twitter', passport.authenticate('twitter'));
+
+app.get('/auth/twitter/callback', 
+  passport.authenticate('twitter', { successRedirect: '/',
+                                     failureRedirect: '/login' }));
+
 
 app.use('/', routes);
 app.use('/users', users);
