@@ -64,7 +64,7 @@ app.use(passport.session());
 app.get('/auth/twitter', passport.authenticate('twitter'));
 
 app.get('/auth/twitter/callback', 
-  passport.authenticate('twitter', { successRedirect: '/',
+  passport.authenticate('twitter', { successRedirect: '/games/small',
                                      failureRedirect: '/login' }));
 
 app.get('/logout', function (req, res){
