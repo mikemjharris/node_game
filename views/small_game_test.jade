@@ -1,9 +1,20 @@
 extends layout
 
 block content
-  img(id="player_img" src="#{image}")
-  p(id="join_game") Join Game
+  if user != ""
+    a(href="/logout") Sign out
+    img(class="player_img" id="player_img" src="#{user.profile_image_url}")
+    p(id="player_name")= user.name  
+    div(class="join_button" id="join_game_twitter") Join Game
+  else
+    label Enter name or sign in with twitter. Then click join game!
+    a(href="/auth/twitter") Sign in with Twitter
+    input(id="player_name_input")
+    div(class="join_button" id="join_game") Join Game
+  div(id="current_players") current players
+    ul
   div(id="main" onload="game()")
+
     canvas(id="canvas" width="400px" height="400px")
 
   

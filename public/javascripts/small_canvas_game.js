@@ -27,6 +27,19 @@ socket.on('connected', function(socket_id, existing_movers){
       console.log(socket_id)
       console.log(existing_movers)
       client_id = socket_id
+      
+      for(var i = 0; i < existing_movers.length; i ++) {
+        var player_name = existing_movers[i].player_name
+        var player_image = existing_movers[i].player_image
+        var player_id = existing_movers[i].client_id
+
+        $img = $('<img>')
+        $img.attr('src', player_image)
+        $li = $('<li>')
+        $li.attr("id", player_id).addClass("player_list").text(player_name)
+        $li.append($img)
+        $('#current_players ul').append($li)
+      };
       game(existing_movers)
 
   }); 
@@ -36,26 +49,34 @@ socket.on('move', function(direction){
   });
 
 socket.on('new_game', function(player){
-      // game(player);
-      // console.log("starting new game")
-      // console.log(player)
-      // console.log(player);
+     
   });
 
 
 socket.on('player_removed', function(player_id){
-  console.log(player_id)
   for(var i = 0; i < movers.length; i ++) {
-
     if(movers[i].client_id == player_id){
       movers.splice(i,1);
     }
   }
+  $("#" + player_id).remove();
 })
 
 
 socket.on('new_player', function(new_player){
       movers.push(new_player)
+      var player_name = new_player.player_name
+      var player_image = new_player.player_image
+      var player_id = new_player.client_id
+
+      $img = $('<img>')
+      $img.attr('src', player_image)
+      $li = $('<li>')
+      $li.attr("id", player_id).addClass("player_list").text(player_name)
+      $li.append($img)
+      $('#current_players ul').append($li)
+
+
       // console.log(new_player);
   });
 
@@ -68,13 +89,41 @@ socket.on('playerposition', function(position){
       }
   });
 
-$('#create_game').on("click", function(){
-  var player = game();
-  socket.emit("new_game", player)  
-})
+// $('#create_game').on("click", function(){
+//   var player = game();
+//   socket.emit("new_game", player)  
+// })
 
 $('#join_game').on("click", function(){
-  var new_player = new Player(100,100,10,1,0,0,client_id);
+  var player_name = $('#player_name_input').html()
+  var player_image = "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSKGgx0Le2Rwg7-XSWS_EeuGeebpL-PGabrEm9hFLk2llz1MnQY"
+  var new_player = new Player(100,100,10,1,0,0,client_id, player_name, player_image);
+  
+  $img = $('<img>')
+  $img.attr('src', player_image)
+  $li = $('<li>')
+  $li.attr("id",client_id).addClass("player_list").text(player_name)
+  $li.append($img)
+  $('#current_players ul').append($li)
+
+  movers.push(new_player)
+  socket.emit("new_player", new_player)  
+})
+
+
+
+$('#join_game_twitter').on("click", function(){
+  var player_name = $('#player_name').html()
+  var player_image = $('#player_img').attr('src');
+  var new_player = new Player(100,100,10,1,0,0,client_id, player_name, player_image);
+  
+  $img = $('<img>')
+  $img.attr('src', player_image)
+  $li = $('<li>')
+  $li.attr("id",client_id).addClass("player_list").text(player_name)
+  $li.append($img)
+  $('#current_players ul').append($li)
+
   movers.push(new_player)
   socket.emit("new_player", new_player)  
 })
@@ -85,7 +134,7 @@ $('#change_pos').on("click", function(){
   movers[0].y = 0
 })
 
-function Player(x,y,w, solid, speedx, speedy, client_id) {
+function Player(x,y,w, solid, speedx, speedy, client_id, player_name, player_image) {
   this.x = x;
   this.y = y;
   this.w = w;
@@ -95,20 +144,21 @@ function Player(x,y,w, solid, speedx, speedy, client_id) {
   this.speedx = speedx;
   this.speedy = speedy;
   this.client_id = client_id;
+  this.player_name = player_name
+  this.player_image = player_image;
   }
 
-function drawMovers(movers) {
-  
-  player_img = $('#player_img')
-    
+function drawMovers(movers) {  
   for (var i = 0; i < movers.length ; i++) {
-      if(movers[i].client_id == client_id) {
+      // if(movers[i].player_image) {
+          player_img = $('#' + movers[i].client_id + " img")
+          // console.log(player_img)
           cxt.drawImage(player_img[0], movers[i].x, movers[i].y);
           // cxt.fillStyle = "#FF0000";
-      } else {
-        cxt.fillStyle = "#000";
-        cxt.fillRect(movers[i].x,movers[i].y,movers[i].w,movers[i].h);
-      }
+      // } else {
+        // cxt.fillStyle = "#000";
+        // cxt.fillRect(movers[i].x,movers[i].y,movers[i].w,movers[i].h);
+      // }
     };
 };
   

@@ -6,7 +6,7 @@ router.get('/', function(req, res) {
   // console.log(req.session.passport.user)
   // console.log("***" + req.session.passport["_JSON"]["profile_image_url"])
   if (req.session.passport.user) {
-    var image = req.session.passport.user._json.profile_image_url
+    var image = req.session.passport.user.profile_image_url
     console.log("*****" + image)
   } else {
     var image = "";
@@ -14,6 +14,7 @@ router.get('/', function(req, res) {
 
   res.render('index', { title: 'Expressaa', image: image, test: "test" });
 });
+
 
 
 

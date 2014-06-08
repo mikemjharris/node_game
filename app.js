@@ -26,7 +26,7 @@ passport.use(new TwitterStrategy({
   function(token, tokenSecret, profile, done) {
     user = profile;
     session.profile = profile
-    done(null, profile);
+    done(null, profile._json);
     // User.findOrCreate(..., function(err, user) {
       // if (err) { return done(err); }
       // done(null, user);
@@ -66,6 +66,12 @@ app.get('/auth/twitter', passport.authenticate('twitter'));
 app.get('/auth/twitter/callback', 
   passport.authenticate('twitter', { successRedirect: '/',
                                      failureRedirect: '/login' }));
+
+app.get('/logout', function (req, res){
+  req.session.destroy(function (err) {
+    res.redirect('/'); //Inside a callback… bulletproof!
+  });
+});
 
 
 app.use('/', routes);
