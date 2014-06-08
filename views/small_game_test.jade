@@ -1,7 +1,7 @@
 extends layout
 
 block content
-  p(id="create_game") Create Game
+  img(id="player_img" src="#{image}")
   p(id="join_game") Join Game
   div(id="main" onload="game()")
     canvas(id="canvas" width="400px" height="400px")

@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res) {
-  console.log(req.session.passport.user)
+  // console.log(req.session.passport.user)
   // console.log("***" + req.session.passport["_JSON"]["profile_image_url"])
   if (req.session.passport.user) {
     var image = req.session.passport.user._json.profile_image_url

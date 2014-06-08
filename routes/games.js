@@ -12,8 +12,13 @@ router.get('/jade', function(req, res) {
 });
 
 router.get('/small', function(req, res) {
-  console.log('test log');
-  res.render('small_game_test')
+  if (req.session.passport.user) {
+    var image = req.session.passport.user._json.profile_image_url
+  } else {
+    var image = "";
+  }
+
+  res.render('small_game_test', {  image: image });
 });
 
 

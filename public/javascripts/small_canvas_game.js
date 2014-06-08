@@ -98,15 +98,18 @@ function Player(x,y,w, solid, speedx, speedy, client_id) {
   }
 
 function drawMovers(movers) {
-
+  
+  player_img = $('#player_img')
+    
   for (var i = 0; i < movers.length ; i++) {
       if(movers[i].client_id == client_id) {
-        cxt.fillStyle = "#FF0000";
+          cxt.drawImage(player_img[0], movers[i].x, movers[i].y);
+          // cxt.fillStyle = "#FF0000";
       } else {
         cxt.fillStyle = "#000";
+        cxt.fillRect(movers[i].x,movers[i].y,movers[i].w,movers[i].h);
       }
-      cxt.fillRect(movers[i].x,movers[i].y,movers[i].w,movers[i].h);
-      };
+    };
 };
   
 function movePlayer(movers) {
@@ -136,16 +139,10 @@ function game(players) {
   cxt = canvas.getContext("2d");
 
   if(typeof players !== 'undefined'){
-    // var new_player = new Player(50,50,10,1,0,0,client_id);
     movers = players;
-    // console.log("here")
-    // console.log(players)
-    // socket.emit('new_player', new_player);
   } else {
-
     var new_player = new Player(0,0,10,1,0,0,client_id);
     movers = [new_player];
-  
   }
   
   
