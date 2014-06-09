@@ -34,8 +34,17 @@ socket.on('connected', function(socket_id, existing_movers){
       console.log(existing_movers)
       client_id = socket_id
       
-      for(var i = 0; i < existing_movers.length; i ++) {
-        if(!(existing_movers.client_id != "bullet")) {
+      $.when(listMovers(existing_movers)).then(game(existing_movers))      
+     
+
+      
+
+  }); 
+
+
+function listMovers(existing_movers)  {
+   for(var i = 0; i < existing_movers.length; i ++) {
+        if(existing_movers[i].client_id.substring(0,6) != "bullet") {
           var player_name = existing_movers[i].player_name
           var player_image = existing_movers[i].player_image
           var player_id = existing_movers[i].client_id
@@ -48,9 +57,7 @@ socket.on('connected', function(socket_id, existing_movers){
           $('#current_players ul').append($li)
           }
         };
-      game(existing_movers)
-
-  }); 
+}  
 
 socket.on('move', function(direction){
       console.log(direction)
