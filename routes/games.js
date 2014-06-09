@@ -3,8 +3,13 @@ var router = express.Router();
 
 /* GET users listing. */
 router.get('/', function(req, res) {
-  res.render('small_game_test')
-  // res.sendfile("public/html/canvas_game.html")
+   if (req.session.passport.user) {
+    var user = req.session.passport.user
+  } else {
+    var user = "";
+  }
+  console.log(req.session.passport.user)
+  res.render('small_game_test', {  user: user });
 });
 
 router.get('/jade', function(req, res) {

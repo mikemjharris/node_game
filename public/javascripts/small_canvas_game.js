@@ -9,6 +9,7 @@ var imgd;
 var rects = [];
 var movers = [];
 var client_id 
+var player_size = 50;
 
 window.requestAnimFrame = (function(){
     return  window.requestAnimationFrame       || 
@@ -97,13 +98,15 @@ socket.on('playerposition', function(position){
 $('#join_game').on("click", function(){
   var player_name = $('#player_name_input').html()
   var player_image = "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSKGgx0Le2Rwg7-XSWS_EeuGeebpL-PGabrEm9hFLk2llz1MnQY"
-  var new_player = new Player(100,100,10,1,0,0,client_id, player_name, player_image);
+  var start_x = Math.random()*700
+  var start_y = Math.random()*400
+  var new_player = new Player(start_x,start_y,player_size,1,0,0,client_id, player_name, player_image);
   
   $img = $('<img>')
   $img.attr('src', player_image)
   $li = $('<li>')
   $li.attr("id",client_id).addClass("player_list").text(player_name)
-  $li.append($img)
+  $li.prepend($img)
   $('#current_players ul').append($li)
 
   movers.push(new_player)
@@ -115,13 +118,17 @@ $('#join_game').on("click", function(){
 $('#join_game_twitter').on("click", function(){
   var player_name = $('#player_name').html()
   var player_image = $('#player_img').attr('src');
-  var new_player = new Player(100,100,10,1,0,0,client_id, player_name, player_image);
+  var start_x = Math.random()*700
+  var start_y = Math.random()*400
+
+  var new_player = new Player(start_x,start_y,player_size,1,0,0,client_id, player_name, player_image);
   
   $img = $('<img>')
   $img.attr('src', player_image)
   $li = $('<li>')
+  
   $li.attr("id",client_id).addClass("player_list").text(player_name)
-  $li.append($img)
+  $li.prepend($img)
   $('#current_players ul').append($li)
 
   movers.push(new_player)
@@ -150,20 +157,13 @@ function Player(x,y,w, solid, speedx, speedy, client_id, player_name, player_ima
 
 function drawMovers(movers) {  
   for (var i = 0; i < movers.length ; i++) {
-      // if(movers[i].player_image) {
           player_img = $('#' + movers[i].client_id + " img")
-          // console.log(player_img)
-          cxt.drawImage(player_img[0], movers[i].x, movers[i].y);
-          // cxt.fillStyle = "#FF0000";
-      // } else {
-        // cxt.fillStyle = "#000";
-        // cxt.fillRect(movers[i].x,movers[i].y,movers[i].w,movers[i].h);
-      // }
+          cxt.drawImage(player_img[0], movers[i].x, movers[i].y, player_size,player_size);
+          
     };
 };
   
 function movePlayer(movers) {
-  
       // var oldx = movers[0].x
       // var oldy = movers[0].y
       for (var i = 0 ; i < movers.length; i ++) { 
@@ -174,8 +174,8 @@ function movePlayer(movers) {
             socket.emit('playerposition', movers[i]);
           } 
         };
-        movers[i].x = Math.min(Math.max(movers[i].x + movers[i].speedx,0),canvas.width -movers[i].w)
-        movers[i].y = Math.min(Math.max(movers[i].y + movers[i].speedy,0),canvas.height -movers[i].h)
+        movers[i].x = Math.min(Math.max(movers[i].x + movers[i].speedx,0),canvas.width - movers[i].w )
+        movers[i].y = Math.min(Math.max(movers[i].y + movers[i].speedy,0),canvas.height - movers[i].h )
       }
   }
   
@@ -191,13 +191,13 @@ function game(players) {
   if(typeof players !== 'undefined'){
     movers = players;
   } else {
-    var new_player = new Player(0,0,10,1,0,0,client_id);
+    var new_player = new Player(0,0,player_size,1,0,0,client_id);
     movers = [new_player];
   }
   
   
   
-  var imgdata = cxt.getImageData(0, 0, 400, 400);
+  var imgdata = cxt.getImageData(0, 0, 700, 400);
    
   drawMovers(movers);
   
