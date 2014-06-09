@@ -3,6 +3,10 @@ var socket = io.connect(window.location.hostname);
 var cxt;
 var incx = 0;
 var incy = 0;
+var bullet_speed = 6
+var lastincx = 0 
+var lastincy = bullet_speed
+
 var shoot = 0;
 var speed = 3;
 var imgd;
@@ -10,6 +14,7 @@ var rects = [];
 var movers = [];
 var client_id 
 var player_size = 50;
+var shots = 0 
 
 window.requestAnimFrame = (function(){
     return  window.requestAnimationFrame       || 
@@ -30,17 +35,19 @@ socket.on('connected', function(socket_id, existing_movers){
       client_id = socket_id
       
       for(var i = 0; i < existing_movers.length; i ++) {
-        var player_name = existing_movers[i].player_name
-        var player_image = existing_movers[i].player_image
-        var player_id = existing_movers[i].client_id
+        if(!(existing_movers.client_id != "bullet")) {
+          var player_name = existing_movers[i].player_name
+          var player_image = existing_movers[i].player_image
+          var player_id = existing_movers[i].client_id
 
-        $img = $('<img>')
-        $img.attr('src', player_image)
-        $li = $('<li>')
-        $li.attr("id", player_id).addClass("player_list").text(player_name)
-        $li.append($img)
-        $('#current_players ul').append($li)
-      };
+          $img = $('<img>')
+          $img.attr('src', player_image)
+          $li = $('<li>')
+          $li.attr("id", player_id).addClass("player_list").text(player_name)
+          $li.prepend($img)
+          $('#current_players ul').append($li)
+          }
+        };
       game(existing_movers)
 
   }); 
@@ -49,8 +56,8 @@ socket.on('move', function(direction){
       console.log(direction)
   });
 
-socket.on('new_game', function(player){
-     
+socket.on('bullet', function(bullet){
+     movers.push(bullet)
   });
 
 
@@ -63,6 +70,14 @@ socket.on('player_removed', function(player_id){
   $("#" + player_id).remove();
 })
 
+function removePlayer(player_id) {
+  for(var i = 0; i < movers.length; i ++) {
+    if(movers[i].client_id == player_id){
+      movers.splice(i,1);
+    }
+  }
+}
+
 
 socket.on('new_player', function(new_player){
       movers.push(new_player)
@@ -74,11 +89,9 @@ socket.on('new_player', function(new_player){
       $img.attr('src', player_image)
       $li = $('<li>')
       $li.attr("id", player_id).addClass("player_list").text(player_name)
-      $li.append($img)
+      $li.prepend($img)
       $('#current_players ul').append($li)
 
-
-      // console.log(new_player);
   });
 
 socket.on('playerposition', function(position){
@@ -90,14 +103,11 @@ socket.on('playerposition', function(position){
       }
   });
 
-// $('#create_game').on("click", function(){
-//   var player = game();
-//   socket.emit("new_game", player)  
-// })
+
 
 $('#join_game').on("click", function(){
-  var player_name = $('#player_name_input').html()
-  var player_image = "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSKGgx0Le2Rwg7-XSWS_EeuGeebpL-PGabrEm9hFLk2llz1MnQY"
+  var player_name = $('#player_name_input').val()
+  var player_image = "http://t1.gstatic.com/images?q=tbn:ANd9GcSxRa0xj0RzhGMM2VBK8kXXZHfdZPc7nV4p_cA0e1xV6Q2EHJqFbw"
   var start_x = Math.random()*700
   var start_y = Math.random()*400
   var new_player = new Player(start_x,start_y,player_size,1,0,0,client_id, player_name, player_image);
@@ -141,24 +151,32 @@ $('#change_pos').on("click", function(){
   movers[0].y = 0
 })
 
-function Player(x,y,w, solid, speedx, speedy, client_id, player_name, player_image) {
+function Player(x,y,w, solid, speedx, speedy, client_id, player_name, player_image, image_id) {
   this.x = x;
   this.y = y;
   this.w = w;
   this.h = w;
-  this.speed = speedx;
+  // this.speed = speedx;
   this.solid = solid;
   this.speedx = speedx;
   this.speedy = speedy;
   this.client_id = client_id;
   this.player_name = player_name
   this.player_image = player_image;
+  if(client_id.substring(0,6) == "bullet") {
+    this.image_id = "bullet";
+  } else {
+    this.image_id = client_id;
+  }
+  
+
+  // this.speed = speed
   }
 
 function drawMovers(movers) {  
   for (var i = 0; i < movers.length ; i++) {
-          player_img = $('#' + movers[i].client_id + " img")
-          cxt.drawImage(player_img[0], movers[i].x, movers[i].y, player_size,player_size);
+          player_img = $('#' + movers[i].image_id + " img")
+          cxt.drawImage(player_img[0], movers[i].x, movers[i].y, movers[i].w, movers[i].w);
           
     };
 };
@@ -174,13 +192,31 @@ function movePlayer(movers) {
             socket.emit('playerposition', movers[i]);
           } 
         };
+
+
         movers[i].x = Math.min(Math.max(movers[i].x + movers[i].speedx,0),canvas.width - movers[i].w )
         movers[i].y = Math.min(Math.max(movers[i].y + movers[i].speedy,0),canvas.height - movers[i].h )
+
+
+        if (movers[i].client_id.substring(0,6) == "bullet") {
+           if(movers[i].x == 0 || movers[i].x == (canvas.width - movers[i].w) || movers[i].y == 0 || movers[i].y == (canvas.height - movers[i].w) ) {
+                // console.log("bullet hit side")
+                // console.log(movers[i].image_id)
+                removePlayer(movers[i].client_id)
+                shots = 0
+           }
+        }
       }
   }
   
 
-
+function findPlayer(id) {
+    for (var i = 0 ; i < movers.length; i ++) {
+       if (movers[i].client_id == id) {
+          return movers[i]  
+        }
+    }
+}
 
 
 function game(players) {
@@ -222,29 +258,44 @@ window.addEventListener('keydown', function(event) {
   switch (event.keyCode) {
     case 37: // Left
       incx = Math.max(incx-speed,-speed);
+      lastincx = incx * bullet_speed / speed
+      lastincy = incy * bullet_speed / speed
       // console.log(movers)
       break;
 
     case 38: // Up
       incy = Math.max(incy-speed,-speed);
-      
+      lastincx = incx * bullet_speed / speed
+      lastincy = incy * bullet_speed / speed
       // console.log(movers)
       break;
 
     case 39: // Right
-      incx = Math.min(incx+speed,speed)
+      incx = Math.min(incx+speed,speed);
+      lastincx = incx * bullet_speed / speed
+      lastincy = incy * bullet_speed / speed
       
       // console.log(movers)
       break;
 
     case 40: // Down
       incy = Math.min(incy+speed,speed)
+      lastincx = incx * bullet_speed / speed
+      lastincy = incy * bullet_speed / speed
       
       // console.log(movers)
       break;
-    case 32:
-      shoot = 1;
-      
+    case 32: //space bar
+      // shoot = 1;
+      if (shots == 0) {
+        var thisPlayer = findPlayer(client_id)
+        console.log(thisPlayer)
+        var new_bullet = new Player(thisPlayer.x,thisPlayer.y, player_size/2,bullet_speed,lastincx,lastincy,"bullet_" + thisPlayer.client_id, "bullet", thisPlayer.image);
+        socket.emit("bullet", new_bullet)
+        console.log(new_bullet)
+        movers.push(new_bullet)
+        shots = 1
+      }
     break;
     
   }
@@ -254,17 +305,29 @@ window.addEventListener('keyup', function(event) {
   switch (event.keyCode) {
     case 37: // Left
       incx = incx + speed;//Math.max(incx-0.2,-3);
+      if(lastincy !== 0) {
+        lastincx = 0
+      } 
       break;
     case 38: // up
-      incy = incy +speed;//Math.max(incx-0.2,-3);
+      incy = incy + speed;//Math.max(incx-0.2,-3);
+      if(lastincx !== 0) {
+        lastincy = 0
+      } 
       break;
 
     case 39: // Right
       incx = incx -speed; //Math.min(incx+0.2,3)
+      if(lastincy !== 0) {
+        lastincx = 0
+      } 
       break;
       
     case 40: // down
       incy = incy -speed;//Math.max(incx-0.2,-3);
+      if(lastincx !== 0) {
+        lastincy = 0
+      } 
       break;
 
       };
