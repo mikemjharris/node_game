@@ -87,6 +87,16 @@ function removePlayer(player_id) {
   }
 }
 
+function findAPlayer(player_id) {
+  var foundplayer = ""
+  for(var i = 0; i < movers.length; i ++) {
+    if(movers[i].client_id == player_id){
+      foundplayer =  movers[i]
+    }
+  }
+  return foundplayer
+}
+
 
 // function updateMovers() {
 //       for (var i = 0 ; i < movers.length; i ++) { 
@@ -112,8 +122,49 @@ function updateMovers() {
       }
   }
   
+  function compareRect(R1, R2) {
+   return !(R1.x+ R1.w <= R2.x ||
+           R1.y >= R2.y + R2.w ||
+           R1.x >= R2.x + R2.w ||
+           R1.y + R1.w <= R2.y); 
+} 
 
+function checkCollisions() {
+  to_remove = []
+  for(var i = 0; i < movers.length; i++) {
+    for(var j = i; j < movers.length; j++) {
+      if(i !== j) {
+        // if(movers[i].substring)
+          // removePlayer(movers[i].client_id)
+          // removePlayer(movers[j].client_id)
+          // console.log(movers[i].client_id)
+          if (compareRect(movers[i], movers[j]) && (movers[j].client_id.substring(0,6) == "bullet" || movers[i].client_id.substring(0,6) == "bullet") ) {
+            to_remove.push([movers[i].client_id, movers[j].client_id])
+             console.log(to_remove) 
 
+          }
+      }
+    }
+  }
+  
+  for(var k = 0; k < to_remove.length; k++) {
+    
+    console.log(to_remove[k][0] + "***" + to_remove[k][1])
+    if(to_remove[k][0].substring(0,6)=="bullet") {
+      var shooter = findAPlayer(to_remove[k][0].substring(7,to_remove[k][0].length))
+      var shot = findAPlayer(to_remove[k][1])
+    } else {
+      var shooter = findAPlayer(to_remove[k][1].substring(7,to_remove[k][1].length))
+      var shot =    findAPlayer(to_remove[k][0])
+    }
+    var message = shooter.player_name + " shot " + shot.player_name
+    console.log(shooter)
+    io.sockets.emit('player_removed', to_remove[k][0], message);
+    io.sockets.emit('player_removed', to_remove[k][1], message);
+    removePlayer(to_remove[k][0])
+    removePlayer(to_remove[k][1])
+  }
+}
 
 
 
@@ -122,4 +173,7 @@ var times_per_second = 60
 setInterval(function(){
     // console.log("hi")
     updateMovers();
+    checkCollisions();
 }, 1000 / times_per_second)
+
+

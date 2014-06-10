@@ -2,6 +2,7 @@ extends layout
 
 block content
   div(class="page_title")
+    p(id="status")
   
   div(class="user_details")
     if user != ""
@@ -24,6 +25,7 @@ block content
   div(id="current_players") Current Players
     ul
   div(id="bullet")
+    //- img(src="../images/mike.png")
     img(src="http://t1.gstatic.com/images?q=tbn:ANd9GcSxRa0xj0RzhGMM2VBK8kXXZHfdZPc7nV4p_cA0e1xV6Q2EHJqFbw")
   
   script(src="../javascripts/small_canvas_game.js")

@@ -68,13 +68,16 @@ socket.on('bullet', function(bullet){
   });
 
 
-socket.on('player_removed', function(player_id){
+socket.on('player_removed', function(player_id, message){
   for(var i = 0; i < movers.length; i ++) {
     if(movers[i].client_id == player_id){
       movers.splice(i,1);
     }
   }
   $("#" + player_id).remove();
+  $('#status').html(message)
+  console.log("MEsssage::" + message)
+  
 })
 
 function removePlayer(player_id) {
@@ -115,6 +118,7 @@ socket.on('playerposition', function(position){
 $('#join_game').on("click", function(){
   var player_name = $('#player_name_input').val()
   var player_image = "http://t1.gstatic.com/images?q=tbn:ANd9GcSxRa0xj0RzhGMM2VBK8kXXZHfdZPc7nV4p_cA0e1xV6Q2EHJqFbw"
+  // var player_image = "../images/mike.png"
   var start_x = Math.random()*700
   var start_y = Math.random()*400
   var new_player = new Player(start_x,start_y,player_size,1,0,0,client_id, player_name, player_image);
@@ -125,7 +129,7 @@ $('#join_game').on("click", function(){
   $li.attr("id",client_id).addClass("player_list").text(player_name)
   $li.prepend($img)
   $('#current_players ul').append($li)
-
+  $('#join_game').remove();
   movers.push(new_player)
   socket.emit("new_player", new_player)  
 })
@@ -147,7 +151,7 @@ $('#join_game_twitter').on("click", function(){
   $li.attr("id",client_id).addClass("player_list").text(player_name)
   $li.prepend($img)
   $('#current_players ul').append($li)
-
+  $('#join_game_twitter').remove();
   movers.push(new_player)
   socket.emit("new_player", new_player)  
 })
@@ -184,10 +188,14 @@ function drawMovers(movers) {
   for (var i = 0; i < movers.length ; i++) {
           player_img = $('#' + movers[i].image_id + " img")
           cxt.drawImage(player_img[0], movers[i].x, movers[i].y, movers[i].w, movers[i].w);
-          
     };
 };
-  
+
+
+
+
+
+
 function movePlayer(movers) {
       // var oldx = movers[0].x
       // var oldy = movers[0].y
@@ -214,6 +222,7 @@ function movePlayer(movers) {
            }
         }
       }
+      
   }
   
 
@@ -257,7 +266,7 @@ function game(players) {
 }
 
 
- 
+ // function sign(x) { return x > 0 ? 1 : x < 0 ? -1 : 0; }
 
 
 window.addEventListener('keydown', function(event) {
@@ -297,7 +306,25 @@ window.addEventListener('keydown', function(event) {
       if (shots == 0) {
         var thisPlayer = findPlayer(client_id)
         console.log(thisPlayer)
-        var new_bullet = new Player(thisPlayer.x,thisPlayer.y, player_size/2,bullet_speed,lastincx,lastincy,"bullet_" + thisPlayer.client_id, "bullet", thisPlayer.image);
+        console.log(lastincx)
+        console.log(lastincy)
+        if (lastincx < 0){
+            var bullet_x = thisPlayer.x - player_size / 2
+          } else if(lastincx > 0) {
+            var bullet_x = thisPlayer.x + player_size 
+          } else {
+            var bullet_x = thisPlayer.x + player_size / 4
+          }
+        if (lastincy < 0){
+            var bullet_y = thisPlayer.y - player_size / 2
+          } else if(lastincy > 0) {
+            var bullet_y = thisPlayer.y + player_size 
+          } else {
+            var bullet_y = thisPlayer.y + player_size / 4
+          }
+        
+
+        var new_bullet = new Player(bullet_x,bullet_y, player_size/2,bullet_speed,lastincx,lastincy,"bullet_" + thisPlayer.client_id, "bullet", thisPlayer.image);
         socket.emit("bullet", new_bullet)
         console.log(new_bullet)
         movers.push(new_bullet)
