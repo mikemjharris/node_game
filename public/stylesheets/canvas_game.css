@@ -70,3 +70,7 @@ a {
   margin: 0 30px;
   display: inline-block;
 }
+
+#bullet {
+  display: none;
+}
